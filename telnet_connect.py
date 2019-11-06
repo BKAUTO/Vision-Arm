@@ -43,25 +43,22 @@ class TelnetClient():
 		command_result = self.tn.read_very_eager()
 		logging.warning('command response:\n%s' %command_result)
 
-	def save_img(self, command):
-		self.tn.write(command+'\r\n')
-		#time.sleep(8)
+	def save_img(self, filename):
+		self.tn.write('RB\r\n')
 		raw_data = self.tn.read_until('  ', timeout=10)
 		data = raw_data.split('\r\n', 2)
 		raw_data = data[2].replace('\r','').replace('\n','')[:-4]
-
 		#print(raw_data)
 		#print(len(raw_data))
 		#print(len(raw_img))
-
-		with open("test1.bmp", 'wb') as bmp_file:
+		with open(filename+'.bmp', 'wb') as bmp_file:
 			bmp_file.write(bytearray.fromhex(raw_data))  # convert values to bytes
 		logging.warning('BMP image saved.')	
 
 
 	def logout_host(self):
 		self.tn.close
-
+'''
 if __name__ == '__main__':
 	print "Connecting to Cognex camera... "
 	telnet_client = TelnetClient()
@@ -69,5 +66,6 @@ if __name__ == '__main__':
 		for i in range(50):
 			telnet_client.execute_command('SE8')
 			time.sleep(2)
-			telnet_client.save_img('RB')
+			telnet_client.save_img('test')
 		telnet_client.logout_host
+'''
