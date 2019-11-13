@@ -4,10 +4,10 @@ import cv2
 import glob
 import time
 from telnet_connect import TelnetClient
-
+'''
 print "Connecting to Cognex camera...\n"
 telnet_client = TelnetClient()
-ip = "192.168.2.99"
+ip = "192.168.2.99"欧拉角旋转矩阵
 username = "admin"
 password = ""
 
@@ -20,13 +20,14 @@ if telnet_client.login_host(ip, username, password):
 		print("Saving the %d calibrate image...\n" %(i+1))
 	print("All calibrate pics acquired.\n")
 	telnet_client.logout_host
-
+'''
 # termination criteria
 criteria = (cv2.TERM_CRITERIA_EPS + cv2.TERM_CRITERIA_MAX_ITER, 30, 0.001)
 
 # prepare object points, like (0,0,0), (1,0,0), (2,0,0) ....,(6,5,0)
 objp = np.zeros((6*8,3), np.float32)
 objp[:,:2] = np.mgrid[0:8,0:6].T.reshape(-1,2)
+objp = objp*29
 
 # Arrays to store object points and image points from all the images.
 objpoints = [] # 3d point in real world space
@@ -74,9 +75,10 @@ dst = dst[y:y+h, x:x+w]
 cv2.imwrite('calibresult.png',dst)
 
 tot_error = 0
-for i in xrange(len(objpoints)):
+for i in range(len(objpoints)):
     imgpoints2, _ = cv2.projectPoints(objpoints[i], rvecs[i], tvecs[i], mtx, dist)
     error = cv2.norm(imgpoints[i],imgpoints2, cv2.NORM_L2)/len(imgpoints2)
     tot_error += error
 
-print "total error: ", tot_error/len(objpoints)
+print("total error: ", tot_error/len(objpoints))
+print(objp)
