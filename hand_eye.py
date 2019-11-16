@@ -17,12 +17,6 @@ from std_msgs.msg import String
 from moveit_commander.conversions import pose_to_list
 from telnet_connect import TelnetClient
 
-while True:
-	print('waiting for connection...')
-	conn,addr = sk.accept()
-	print('...connnecting from:', addr)
-	break
-
 def receive_pose(buffersize):
 	send_str = 'cart_pos\r'
 	conn.sendall(send_str.encode())
@@ -52,6 +46,11 @@ if __name__ == '__main__':
 	sk.bind(ip_port)
 	sk.listen(5)
 	print("create server sucessfully!!!")
+	while True:
+		print('waiting for connection...')
+		conn,addr = sk.accept()
+		print('...connnecting from:', addr)
+		break
 
 	print("Connecting to Cognex camera...\n")
 	telnet_client = TelnetClient()
@@ -99,7 +98,7 @@ if __name__ == '__main__':
 				telnet_client.execute_command('SE8')
 				telnet_client.save_img('handeye_pics/handeye'+str(i))
 				break
-	telnet_client.logout_host
+	telnet_client.logout_host()
 	sk.shutdown(2)
 	sk.close()
 
@@ -148,7 +147,6 @@ if __name__ == '__main__':
 	print(R_gripper2base.shape)
 	t_target2cam = np.array(t_target2cam)
 	R_target2cam = np.array(R_target2cam)
-	objp = objp*29
 	#print(R_target2cam.shape)
 	np.savetxt("t_gripper2base.txt", t_gripper2base)
 	np.savetxt("R_gripper2base.txt", np.reshape(R_gripper2base,(2,18)))
