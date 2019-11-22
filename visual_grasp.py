@@ -11,7 +11,7 @@ from apply_hand_eye import applyHandEye
 def detect_circles_demo(image):
 	dst = cv2.pyrMeanShiftFiltering(image, 10, 100)   #边缘保留滤波EPF
 	cimage = cv2.cvtColor(dst, cv2.COLOR_RGB2GRAY)
-	circles = cv2.HoughCircles(cimage, cv2.HOUGH_GRADIENT, 1, 20, param1=50, param2=30, minRadius=0, maxRadius=0)
+	circles = cv2.HoughCircles(cimage, cv2.HOUGH_GRADIENT, 1, 20, param1=50, param2=35, minRadius=0, maxRadius=0)
 	circles = np.uint16(np.around(circles)) #把circles包含的圆心和半径的值变成整数
 	for i in circles[0, : ]:
 		cv2.circle(image, (i[0], i[1]), i[2], (0, 0, 255), 2)  #画圆
@@ -28,11 +28,12 @@ def moveToPose(pose):
 	conn2.sendall(send_str)
 	send_str = str(str(pose[2])+'\r')
 	conn2.sendall(send_str)
-	time.sleep(8)
+	time.sleep(5)
 
 
 if __name__ == '__main__':
 	cameraMatrix = np.loadtxt("Camera Matrix.txt")
+	dist = np.loadtxt("Camera Distort.txt")
 	R_cam2gripper = np.loadtxt("R_cam2gripper.txt")
 	t_cam2gripper = np.loadtxt("t_cam2gripper.txt")
 
@@ -73,24 +74,33 @@ if __name__ == '__main__':
 	else:
 		print("Connection to camera faied...")
 		sys.exit(0)
+	for i in range(8):
+		#Move to HomePose
+		HomePose = [320.0,0.0,353.0]
+		moveToPose(HomePose)
 	
-	#Move to HomePose
-	HomePose = [320.0,0.0,353.0]
-	moveToPose(HomePose)
-	
-	#Take a photo
-	telnet_client.execute_command('SE8')
-	telnet_client.save_img('grasp_test')
+		#Take a photo
+		telnet_client.execute_command('SE8')
+		telnet_client.save_img('grasp_test')
 
-	src = cv2.imread('grasp_test.bmp')
-	cv2.namedWindow('input_image', cv2.WINDOW_NORMAL) #设置为WINDOW_NORMAL可以任意缩放
-	cv2.imshow('input_image', src)
-	object_point = detect_circles_demo(src)
-	print(object_point)
-	target_point = applyHandEye(object_point, R_cam2gripper, t_cam2gripper, cameraMatrix, conn1)
-	print(target_point)
-	HomePose = [target_point[0],target_point[1],353.0]
-	moveToPose(HomePose)
+		img = cv2.imread('grasp_test.bmp', cv2.IMREAD_GRAYSCALE)
+		h,  w = img.shape[:2]
+		newcameramtx, roi=cv2.getOptimalNewCameraMatrix(cameraMatrix,dist,(w,h),1,(w,h))
+		dst = cv2.undistort(img, cameraMatrix, dist, None, newcameramtx)
+		# crop the image
+		x,y,w,h = roi
+		dst = dst[y:y+h, x:x+w]
+		cv2.imwrite('grasp_test.bmp',dst)
+
+		src = cv2.imread('grasp_test.bmp')
+		cv2.namedWindow('input_image', cv2.WINDOW_NORMAL) #设置为WINDOW_NORMAL可以任意缩放
+		cv2.imshow('input_image', src)
+		object_point = detect_circles_demo(src)
+		print(object_point)
+		target_point = applyHandEye(object_point, R_cam2gripper, t_cam2gripper, cameraMatrix, conn1)
+		print(target_point)
+		targetPose = [target_point[0][0]+10,target_point[1][0]-15,353.0-300.0]
+		moveToPose(targetPose)
 	telnet_client.logout_host()
 	sk1.shutdown(2)
 	sk1.close()

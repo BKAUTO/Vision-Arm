@@ -74,7 +74,7 @@ if __name__ == '__main__':
 
 	default_orientation = np.array([-math.pi, 0, math.pi])
 
-	for i in range(4):
+	for i in range(8):
 		print ("Please move to the %dth pose" %(i+1))
 		print ("Press t to take a photo")
 		while(1):
@@ -113,7 +113,7 @@ if __name__ == '__main__':
 	objp[:,:2] = np.mgrid[0:8,0:6].T.reshape(-1,2)
 	objp = objp*29
 
-	for i in range(4):
+	for i in range(8):
 		gray = cv2.imread('handeye_pics/handeye'+str(i)+'.bmp', cv2.IMREAD_GRAYSCALE)
 		objpoints = [] # 3d point in real world space
 		imgpoints = [] # 2d points in image plane.
@@ -149,9 +149,9 @@ if __name__ == '__main__':
 	R_target2cam = np.array(R_target2cam)
 	#print(R_target2cam.shape)
 	np.savetxt("t_gripper2base.txt", t_gripper2base)
-	np.savetxt("R_gripper2base.txt", np.reshape(R_gripper2base,(2,18)))
+	np.savetxt("R_gripper2base.txt", np.reshape(R_gripper2base,(2,36)))
 	np.savetxt("t_target2cam.txt", t_target2cam)
-	np.savetxt("R_target2cam.txt", np.reshape(R_target2cam,(2,18)))
+	np.savetxt("R_target2cam.txt", np.reshape(R_target2cam,(2,36)))
 
 	'''
 	R_cam2gripper, t_cam2gipper = cv2.calibrateHandEye(R_gripper2base, t_gripper2base, R_target2cam, t_target2cam)
